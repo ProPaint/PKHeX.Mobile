@@ -33,9 +33,23 @@ namespace PKHeX.Mobile.Logic
 
                 var fi = new FileInfo(path);
                 var len = fi.Length;
-                bool isPossibleSAV = SaveUtil.IsSizeValid((int) len);
+                bool isPossibleSAV = SaveUtil.IsSizeValid((int)len);
+
                 if (!isPossibleSAV)
-                    return null;
+                { 
+                    var lenD = len - 122;
+                    bool isPossibleDSAV = SaveUtil.IsSizeValid((int)lenD);
+                    if (isPossibleDSAV)
+                    {
+                        var data1 = File.ReadAllBytes(path);
+                        Byte[] dataD = new Byte[lenD];
+                        Array.ConstrainedCopy(data1, 0, dataD, 0, (int)lenD);
+                        var savD = SaveUtil.GetVariantSAV(data1);
+                        savD?.SetFileInfo(path);
+                        return savD;
+                    }
+                return null;
+                }
 
                 var data = File.ReadAllBytes(path);
                 var sav = SaveUtil.GetVariantSAV(data);
